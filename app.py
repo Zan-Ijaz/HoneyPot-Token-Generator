@@ -22,6 +22,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from functools import wraps
 from collections import Counter
+# ---------- Config ----------
+from config import ADMIN_USERNAME, ADMIN_PASSWORD, WEBHOOK_URL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, ALERT_EMAIL
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
@@ -30,15 +32,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# ---------- Config (override via environment) ----------
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin')
-WEBHOOK_URL    = os.environ.get('WEBHOOK_URL', '')   # Slack/Discord webhook
-SMTP_HOST      = os.environ.get('SMTP_HOST', '')
-SMTP_PORT      = int(os.environ.get('SMTP_PORT', 587))
-SMTP_USER      = os.environ.get('SMTP_USER', '')
-SMTP_PASS      = os.environ.get('SMTP_PASS', '')
-ALERT_EMAIL    = os.environ.get('ALERT_EMAIL', '')
 
 PKT = pytz.timezone('Asia/Karachi')
 
@@ -293,7 +286,7 @@ def send_email_alert(alert, token, attacker_type, explanation):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f"🚨 HONEYTOKEN ALERT: Compromise Detected [{alert.risk_level}]"
         msg['From'] = SMTP_USER or 'honeytoken@alerts.io'
-        msg['To'] = ALERT_EMAIL
+        msg['To'] = 'saadsadi083@gmail.com'
         
         html = f"""
         <html>
@@ -894,6 +887,23 @@ with app.app_context():
     check_db_schema()
     if ValidToken.query.count() == 0:
         generate_default_tokens()
+        
+# TEMPORARY EMAIL TEST - delete after confirming it works
+import smtplib
+from email.mime.text import MIMEText
+try:
+    msg = MIMEText("Test email from HoneyToken!")
+    msg['Subject'] = 'HoneyToken Test'
+    msg['From'] = 'saadsadi0067@gmail.com'
+    msg['To'] = 'saadsadi083@gmail.com'
+    s = smtplib.SMTP('smtp.gmail.com', 587, timeout=5)
+    s.starttls()
+    s.login('saadsadi0067@gmail.com', 'oqcoikleiosattps')
+    s.sendmail(msg['From'], msg['To'], msg.as_string())
+    s.quit()
+    print("✅ TEST EMAIL SENT SUCCESSFULLY!")
+except Exception as e:
+    print(f"❌ EMAIL FAILED: {e}")
 
 if __name__ == '__main__':
     print('\n' + '='*60)
